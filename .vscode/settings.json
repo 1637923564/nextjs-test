@@ -1,0 +1,24 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.fixAll.stylelint": true
+  },
+  "editor.tabSize": 3,
+  "stylelint.snippet": [
+    "css",
+    "less",
+    "postcss",
+    "scss",
+    "sass",
+    "vue"
+  ],
+  "stylelint.validate": [
+    "css",
+    "less",
+    "postcss",
+    "scss",
+    "sass",
+    "vue"
+  ]
+}
+  

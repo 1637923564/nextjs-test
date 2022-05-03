@@ -1,0 +1,14 @@
+#nav {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  section {
+    &.buttons_wrap {
+      & > button:first-child {
+        margin-right: 16px;
+      }
+    }
+  }
+}
