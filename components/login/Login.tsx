@@ -1,6 +1,7 @@
 import { Button, Form, FormProps, Input, message, Modal, Tooltip } from 'antd'
 import { NextPage } from 'next'
 import { ReactNode, useState } from 'react'
+import { sendAuthCode } from './api'
 import styles from './style/index.module.scss'
 
 interface LoginProps {
@@ -59,6 +60,10 @@ const Login: NextPage<LoginProps> = (props) => {
 					return timer - 1
 				})
 			}, 1000)
+
+			sendAuthCode({ phoneNumber: form.getFieldValue('account') }).then((res) => {
+				console.log(res)
+			})
 		}
 	}
 
