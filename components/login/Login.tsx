@@ -1,7 +1,8 @@
 import { Button, Form, FormProps, Input, message, Modal, Tooltip } from 'antd'
 import { NextPage } from 'next'
+import { LoginBody } from 'pages/api/user/types'
 import { ReactNode, useState } from 'react'
-import { sendAuthCode } from './api'
+import { login, sendAuthCode } from './api'
 import styles from './style/index.module.scss'
 
 interface LoginProps {
@@ -16,22 +17,25 @@ const layout: FormProps & { children?: ReactNode } = {
 }
 
 const formInitialValues = {
-	account: '13547271471',
+	account: '13540147134',
 	authCode: '1111',
 }
 
 const Login: NextPage<LoginProps> = (props) => {
-	const [form] = Form.useForm()
+	const [form] = Form.useForm<LoginBody>()
 
 	const close = () => {
 		const { onClose } = props
 		onClose && onClose()
 	}
+
+	// 确认登录
+	const [loginLoading, setLoginLoading] = useState(false)
 	const confirm = () => {
 		form
 			.validateFields()
-			.then((e) => {
-				console.log('ok', form.getFieldsValue(), e)
+			.then(async (e) => {
+				await login(form.getFieldsValue(), setLoginLoading)
 				message.success('登录成功')
 				close()
 			})
@@ -46,41 +50,31 @@ const Login: NextPage<LoginProps> = (props) => {
 	//* 获取验证码
 	const [disableGetAuthCode, setDisableGetAuthCode] = useState(false)
 	const [authCodeButtonLoading, setAuthCodeButtonLoading] = useState(false)
-	const [authCodeTimer, setAuthCodeTimer] = useState(6)
+	const [authCodeTimer, setAuthCodeTimer] = useState(15)
 	const getAuthCode = () => {
 		if (!disableGetAuthCode) {
-			setDisableGetAuthCode(true)
-			const interval = setInterval(() => {
-				setAuthCodeTimer((timer) => {
-					if (timer <= 1) {
-						clearInterval(interval)
-						setDisableGetAuthCode(false)
-						return authCodeTimer
-					}
-					return timer - 1
-				})
-			}, 1000)
-
-			sendAuthCode({ phoneNumber: form.getFieldValue('account') }).then((res) => {
-				console.log(res)
+			sendAuthCode({ phoneNumber: form.getFieldValue('account') }, setAuthCodeButtonLoading).then(() => {
+				setDisableGetAuthCode(true)
+				message.success('验证码已发送，请注意查收')
+				const interval = setInterval(() => {
+					setAuthCodeTimer((timer) => {
+						if (timer <= 1) {
+							clearInterval(interval)
+							setDisableGetAuthCode(false)
+							return authCodeTimer
+						}
+						return timer - 1
+					})
+				}, 1000)
 			})
 		}
 	}
 
 	return (
 		<>
-			<Modal
-				title="登录"
-				visible={props.visible}
-				onCancel={close}
-				onOk={confirm}
-				okText="登录"
-				cancelText="取消"
-				width={400}
-				centered
-			>
+			<Modal title="登录" visible={props.visible} width={400} centered footer={null}>
 				<div className={styles.loginWrap}>
-					<Form form={form} {...layout} initialValues={formInitialValues} style={{ width: '100%' }}>
+					<Form form={form} {...layout} initialValues={formInitialValues} style={{ width: '100%' }} onFinish={confirm}>
 						<Form.Item
 							name="account"
 							label="手机号码"
@@ -107,6 +101,12 @@ const Login: NextPage<LoginProps> = (props) => {
 									{disableGetAuthCode ? `${authCodeTimer}s` : '获取验证码'}
 								</Button>
 							</Input.Group>
+						</Form.Item>
+
+						<Form.Item>
+							<Button type="primary" htmlType="submit" style={{ width: '100%' }} loading={loginLoading}>
+								Submit
+							</Button>
 						</Form.Item>
 					</Form>
 
